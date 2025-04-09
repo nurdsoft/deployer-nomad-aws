@@ -25,4 +25,4 @@ deploy: $(BUILD_DIR)/lambda.zip
 	terraform -chdir=$(TF_MOD_PATH) apply $(TF_DEFAULT_ARGS) -auto-approve -var-file=$(TF_VARS)
 
 destroy:
-	terraform -chdir=$(TF_MOD_PATH) destroy $(TF_DEFAULT_ARGS) -auto-approve -var-file=$(TF_VARS)
+	terraform -chdir=$(TF_MOD_PATH) destroy $(TF_DEFAULT_ARGS) -var-file=$(TF_VARS)
