@@ -1,5 +1,3 @@
-NAME = nomad-deploy
-
 BUILD_DIR = build
 BUILD_ENV = GOOS=linux GOARCH=amd64 CGO_ENABLED=0
 
@@ -8,7 +6,6 @@ TF_DEFAULT_ARGS = -no-color
 .PHONY: clean dryrun deploy
 
 clean:
-	rm -f $(NAME)
 	rm -rf $(BUILD_DIR)
 
 $(BUILD_DIR)/bootstrap:
