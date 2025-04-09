@@ -7,15 +7,18 @@ locals {
   api_gateway_name = "nomad-deploy-api"
 }
 
+
+
 module "lambda_sg" {
   source  = "terraform-aws-modules/security-group/aws"
   version = "5.1.0"
 
-  name                = "nomad-deploy-lambda-sg"
-  vpc_id              = data.aws_vpc.vpc.id
+  name   = "nomad-deploy-lambda-sg"
+  vpc_id = data.aws_vpc.vpc.id
+
   ingress_cidr_blocks = ["${data.aws_vpc.vpc.cidr_block}"]
-  egress_rules        = ["nomad-http-tcp"] # Outgoing traffic only to Nomad API Endpoint
   ingress_rules       = ["all-all"]
+  egress_rules        = ["nomad-http-tcp"]
 }
 
 module "lambda_function" {
@@ -30,6 +33,7 @@ module "lambda_function" {
   create_package         = false
   local_existing_package = local.lambda_path
   timeout                = 200
+
   attach_network_policy  = true
   vpc_subnet_ids         = toset(data.aws_subnets.private.ids)
   vpc_security_group_ids = [module.lambda_sg.security_group_id]
@@ -61,6 +65,16 @@ module "api-gateway" {
     allow_headers = ["content-type", "x-amz-date", "authorization", "x-api-key", "x-amz-security-token", "x-amz-user-agent"]
     allow_methods = ["POST"]
     allow_origins = ["*"]
+  }
+
+  routes = {
+    "POST /deploy" = {
+      integration = {
+        uri                    = module.lambda_function[0].lambda_function_arn
+        payload_format_version = "2.0"
+        timeout_milliseconds   = 12000
+      }
+    }
   }
 
   stage_access_log_settings = {

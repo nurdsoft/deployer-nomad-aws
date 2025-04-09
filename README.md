@@ -8,7 +8,7 @@ Github, Gitlab etc.
 # Usage 
 
 ```shell
-$ make deploy
+$ make deploy TF_VARS=../nonprod.tfvars
 ```
 
 This will run through the complete pipeline and
@@ -16,3 +16,5 @@ This will run through the complete pipeline and
 - compile the go binary
 - package it up
 - deploy it to AWS lambda with the appropriate configuration
+
+The path for TF_VARS should be relative to the `deploy/app` folder.
