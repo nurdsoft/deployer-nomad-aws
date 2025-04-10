@@ -4,7 +4,8 @@ locals {
   lambda_name      = "nomad-deploy"
   lambda_path      = "${path.module}/../../build/lambda.zip"
   runtime          = "provided.al2023"
-  api_gateway_name = "nomad-deploy-api"
+  api_gateway_name = "deployer-nomad-api"
+  lambda_sg_name   = "deployer-nomad-lambda-sg"
 }
 
 
@@ -13,7 +14,7 @@ module "lambda_sg" {
   source  = "terraform-aws-modules/security-group/aws"
   version = "5.1.0"
 
-  name   = "nomad-deploy-lambda-sg"
+  name   = local.lambda_sg_name
   vpc_id = data.aws_vpc.vpc.id
 
   ingress_cidr_blocks = ["${data.aws_vpc.vpc.cidr_block}"]

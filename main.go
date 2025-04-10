@@ -7,7 +7,7 @@ import (
 	"github.com/aws/aws-lambda-go/lambda"
 	"github.com/hashicorp/nomad/api"
 
-	"nomad-deploy/nomad"
+	"deployer-nomad-aws/nomad"
 )
 
 func Entrypoint(request events.APIGatewayProxyRequest) (events.APIGatewayProxyResponse, error) {

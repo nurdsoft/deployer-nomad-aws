@@ -1,4 +1,4 @@
-module nomad-deploy
+module deployer-nomad-aws
 
 go 1.24.1
 
