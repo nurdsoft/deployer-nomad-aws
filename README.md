@@ -8,7 +8,7 @@ Github, Gitlab etc.
 # Usage 
 
 ```shell
-$ make deploy TF_VARS=../nonprod.tfvars
+$ make deploy TF_VARS=../../example.tfvars
 ```
 
 This will run through the complete pipeline and

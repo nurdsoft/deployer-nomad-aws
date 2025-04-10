@@ -5,10 +5,20 @@ TF_DEFAULT_ARGS = -no-color
 TF_MOD_PATH = deploy/app
 TF_VARS ?=
 
-.PHONY: clean dryrun deploy destroy
+.PHONY: clean clean-state clean-mods clean-all dryrun deploy destroy
 
 clean:
 	rm -rf $(BUILD_DIR)
+
+clean-state:
+	rm -f $(TF_MOD_PATH)/terraform.tfstate
+	rm -f $(TF_MOD_PATH)/terraform.tfstate.backup
+
+clean-mods:
+	rm -rf $(TF_MOD_PATH)/.terraform
+	rm -f $(TF_MOD_PATH)/.terraform.lock.hcl
+
+clean-all: clean clean-state clean-mods
 
 $(BUILD_DIR)/bootstrap:
 	$(BUILD_ENV) go build -ldflags="-s -w" -o $(BUILD_DIR)/bootstrap main.go
