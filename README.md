@@ -5,7 +5,13 @@ API Gateway to trigger nomad jobs from the internet while keeping the nomad
 infrastructure private.  This is particularly useful in the case of CI/CD with
 Github, Gitlab etc.
 
+# Features
+
+- Authentication
+- One-click deployment
+
 # Usage 
+
 
 ```shell
 $ make deploy TF_VARS=../../example.tfvars
@@ -17,4 +23,4 @@ This will run through the complete pipeline and
 - package it up
 - deploy it to AWS lambda with the appropriate configuration
 
-The path for TF_VARS should be relative to the `deploy/app` folder.
+The path for `TF_VARS` should be relative to the `deploy/app` folder.
