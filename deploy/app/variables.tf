@@ -10,3 +10,9 @@ variable "region" {
 variable "nomad_addr" {
   type = string
 }
+
+variable "api_keys" {
+  type        = list(string)
+  description = "List of api keys"
+  default     = []
+}

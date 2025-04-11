@@ -41,6 +41,7 @@ module "lambda_function" {
 
   environment_variables = {
     NOMAD_ADDR = var.nomad_addr
+    API_KEYS   = join(",", var.api_keys)
   }
 
   allowed_triggers = {

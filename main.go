@@ -7,10 +7,18 @@ import (
 	"github.com/aws/aws-lambda-go/lambda"
 	"github.com/hashicorp/nomad/api"
 
+	"deployer-nomad-aws/apikeys"
 	"deployer-nomad-aws/nomad"
 )
 
 func Entrypoint(request events.APIGatewayProxyRequest) (events.APIGatewayProxyResponse, error) {
+	if !apikeys.Have(request.Headers["Authorization"]) {
+		return events.APIGatewayProxyResponse{
+			StatusCode: 403,
+			Body:       "Forbidden",
+		}, nil
+	}
+
 	var (
 		reqContentType = request.Headers["Content-Type"]
 		client         = nomad.GetInstance().Jobs()
