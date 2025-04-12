@@ -2,6 +2,7 @@ package main
 
 import (
 	"encoding/json"
+	"strings"
 
 	"github.com/aws/aws-lambda-go/events"
 	"github.com/aws/aws-lambda-go/lambda"
@@ -12,7 +13,12 @@ import (
 )
 
 func Entrypoint(request events.APIGatewayProxyRequest) (events.APIGatewayProxyResponse, error) {
-	if !apikeys.Have(request.Headers["Authorization"]) {
+	authHeader := strings.TrimSpace(request.Headers["Authorization"])
+	if strings.HasPrefix(authHeader, "Bearer ") {
+		authHeader = strings.TrimSpace(strings.TrimPrefix(authHeader, "Bearer "))
+	}
+
+	if !apikeys.Have(authHeader) {
 		return events.APIGatewayProxyResponse{
 			StatusCode: 403,
 			Body:       "Forbidden",
