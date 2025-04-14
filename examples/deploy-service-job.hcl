@@ -1,13 +1,6 @@
 job "hello-service" {
-  datacenters = ["us-west-2"]
+  datacenters = ["dc1"]
   type        = "service"
-
-# Deploy the job on the "shared" cluster
-  constraint {
-    attribute = "${node.class}"
-    operator  = "="
-    value     = "shd"
-  }
 
   group "web-group" {
     count = 1
