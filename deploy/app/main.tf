@@ -1,4 +1,3 @@
-
 locals {
   binary_name      = "bootstrap"
   lambda_name      = "nomad-deploy"
@@ -8,8 +7,7 @@ locals {
   lambda_sg_name   = "deployer-nomad-lambda-sg"
 }
 
-
-
+# Lambda security group
 module "lambda_sg" {
   source  = "terraform-aws-modules/security-group/aws"
   version = "5.1.0"
@@ -17,15 +15,15 @@ module "lambda_sg" {
   name   = local.lambda_sg_name
   vpc_id = data.aws_vpc.vpc.id
 
-  ingress_cidr_blocks = ["${data.aws_vpc.vpc.cidr_block}"]
+  ingress_cidr_blocks = [data.aws_vpc.vpc.cidr_block]
   ingress_rules       = ["all-all"]
   egress_rules        = ["nomad-http-tcp"]
 }
 
+# Lambda function (Go binary packaged externally)
 module "lambda_function" {
   source  = "terraform-aws-modules/lambda/aws"
   version = "7.5.0"
-  count   = 1
 
   function_name          = local.lambda_name
   handler                = local.binary_name
@@ -52,6 +50,7 @@ module "lambda_function" {
   }
 }
 
+# API Gateway (HTTP)
 module "api-gateway" {
   source  = "terraform-aws-modules/apigateway-v2/aws"
   version = "5.0.0"
@@ -59,12 +58,12 @@ module "api-gateway" {
   name                  = local.api_gateway_name
   protocol_type         = "HTTP"
   stage_name            = "v1"
-  create_domain_name    = false # Disable creation of the domain name and API mapping
-  create_domain_records = false # Disable creation of Route53 alias record(s) for the custom domain
-  create_certificate    = false # Disable creation of the ACM certificate for the custom domain
+  create_domain_name    = false
+  create_domain_records = false
+  create_certificate    = false
 
   cors_configuration = {
-    allow_headers = ["content-type", "x-amz-date", "authorization", "x-api-key", "x-amz-security-token", "x-amz-user-agent"]
+    allow_headers = ["x-api-key"]
     allow_methods = ["POST"]
     allow_origins = ["*"]
   }
@@ -72,7 +71,7 @@ module "api-gateway" {
   routes = {
     "POST /deploy" = {
       integration = {
-        uri                    = module.lambda_function[0].lambda_function_arn
+        uri                    = module.lambda_function.lambda_function_arn
         payload_format_version = "2.0"
         timeout_milliseconds   = 12000
       }
@@ -84,28 +83,12 @@ module "api-gateway" {
     log_group_retention_in_days = 7
 
     format = jsonencode({
-      context = {
-        domainName              = "$context.domainName"
-        integrationErrorMessage = "$context.integrationErrorMessage"
-        protocol                = "$context.protocol"
-        requestId               = "$context.requestId"
-        requestTime             = "$context.requestTime"
-        responseLength          = "$context.responseLength"
-        routeKey                = "$context.routeKey"
-        stage                   = "$context.stage"
-        status                  = "$context.status"
-        error = {
-          message      = "$context.error.message"
-          responseType = "$context.error.responseType"
-        }
-        identity = {
-          sourceIP = "$context.identity.sourceIp"
-        }
-        integration = {
-          error             = "$context.integration.error"
-          integrationStatus = "$context.integration.integrationStatus"
-        }
-      }
+      requestId      = "$context.requestId"
+      sourceIP       = "$context.identity.sourceIp"
+      protocol       = "$context.protocol"
+      routeKey       = "$context.routeKey"
+      status         = "$context.status"
+      responseLength = "$context.responseLength"
     })
   }
 }

@@ -1,6 +1,7 @@
 package apikeys
 
 import (
+	"fmt"
 	"os"
 	"strings"
 )
@@ -11,32 +12,36 @@ var apiKeys []string
 
 func parseKeys() []string {
 	value := os.Getenv(EnvVar)
+	fmt.Printf("Raw API_KEYS from env: %q\n", value)
+
 	if value == "" {
 		return nil
 	}
-	strings.TrimSpace(value)
+	value = strings.TrimSpace(value)
 	list := strings.Split(value, ",")
-	if len(list) == 0 {
-		return nil
+	for i := range list {
+		list[i] = strings.TrimSpace(list[i])
 	}
+	fmt.Printf("Parsed API keys: %+v\n", list)
 	return list
 }
 
-// Have returns true if the key is in the list of API keys or authentication
-// is disabled (i.e. no keys are set).
+// Have returns true if the key is in the list of API keys or authentication is disabled.
 func Have(key string) bool {
-	// Return true if no keys are set (i.e. authentication is disabled)
-	// We use the length rather than nil becuase this will be passed in as an env.
-	// variable and will be an empty list rather than nil.
+	fmt.Printf("Checking if key %q exists in %+v\n", key, apiKeys)
+
 	if len(apiKeys) == 0 {
+		fmt.Println("No API keys defined — allowing request")
 		return true
 	}
 
 	for _, k := range apiKeys {
 		if key == k {
+			fmt.Println("API key matched")
 			return true
 		}
 	}
+	fmt.Println("API key did not match")
 	return false
 }
 
