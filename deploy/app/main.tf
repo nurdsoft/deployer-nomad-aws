@@ -19,7 +19,7 @@ module "lambda_sg" {
 
   ingress_cidr_blocks = ["${data.aws_vpc.vpc.cidr_block}"]
   ingress_rules       = ["all-all"]
-  egress_rules        = ["http-80-tcp"]
+  egress_rules        = ["nomad-http-tcp"]
 }
 
 module "lambda_function" {

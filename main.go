@@ -1,6 +1,7 @@
 package main
 
 import (
+	"encoding/base64"
 	"encoding/json"
 	"strings"
 
@@ -13,9 +14,12 @@ import (
 )
 
 func Entrypoint(request events.APIGatewayProxyRequest) (events.APIGatewayProxyResponse, error) {
+	// Handle auth header or x-api-key
 	authHeader := strings.TrimSpace(request.Headers["Authorization"])
 	if strings.HasPrefix(authHeader, "Bearer ") {
 		authHeader = strings.TrimSpace(strings.TrimPrefix(authHeader, "Bearer "))
+	} else if authHeader == "" {
+		authHeader = strings.TrimSpace(request.Headers["x-api-key"])
 	}
 
 	if !apikeys.Have(authHeader) {
@@ -26,28 +30,48 @@ func Entrypoint(request events.APIGatewayProxyRequest) (events.APIGatewayProxyRe
 	}
 
 	var (
-		reqContentType = request.Headers["Content-Type"]
-		client         = nomad.GetInstance().Jobs()
-		job            *api.Job
-		resp           events.APIGatewayProxyResponse
-		err            error
+		client = nomad.GetInstance().Jobs()
+		job    *api.Job
+		resp   events.APIGatewayProxyResponse
+		err    error
 	)
 
-	switch reqContentType {
+	// Normalize content type
+	contentType := strings.ToLower(strings.TrimSpace(request.Headers["Content-Type"]))
+	if contentType == "" {
+		contentType = strings.ToLower(strings.TrimSpace(request.Headers["content-type"]))
+	}
+
+	// Decode body if needed
+	var body string
+	if request.IsBase64Encoded {
+		decoded, err := base64.StdEncoding.DecodeString(request.Body)
+		if err != nil {
+			return events.APIGatewayProxyResponse{
+				StatusCode: 400,
+				Body:       "Invalid base64-encoded body",
+			}, nil
+		}
+		body = string(decoded)
+	} else {
+		body = request.Body
+	}
+
+	switch contentType {
 	case "application/hcl":
-		job, err = client.ParseHCL(string(resp.Body), true)
+		job, err = client.ParseHCL(strings.TrimSpace(body), true)
 		if err != nil {
 			resp.StatusCode = 400
 			resp.Body = err.Error()
 			return resp, nil
 		}
-
 	default:
 		resp.StatusCode = 400
 		resp.Body = "unsupported content type"
 		return resp, nil
 	}
 
+	// Validate job
 	if validateResp, _, err := client.Validate(job, nil); err != nil {
 		b, _ := json.Marshal(validateResp)
 		resp.StatusCode = 400
@@ -58,6 +82,7 @@ func Entrypoint(request events.APIGatewayProxyRequest) (events.APIGatewayProxyRe
 		return resp, nil
 	}
 
+	// Register job
 	rr, _, err := client.Register(job, nil)
 	if err != nil {
 		resp.StatusCode = 500
