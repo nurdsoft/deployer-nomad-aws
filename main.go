@@ -8,19 +8,18 @@ import (
 	"github.com/aws/aws-lambda-go/lambda"
 	"github.com/hashicorp/nomad/api"
 
+	"deployer-nomad-aws/apikeys"
 	"deployer-nomad-aws/nomad"
 )
 
 func Entrypoint(request events.APIGatewayProxyRequest) (events.APIGatewayProxyResponse, error) {
-	// authHeader := strings.TrimSpace(request.Headers["Authorization"])
-	// authHeader = strings.TrimSpace(strings.TrimPrefix(authHeader, "Bearer "))
-
-	// if !apikeys.Have(authHeader) {
-	// 	return events.APIGatewayProxyResponse{
-	// 		StatusCode: 403,
-	// 		Body:       "Forbidden",
-	// 	}, nil
-	// }
+	apiKeyHeader := strings.TrimSpace(request.Headers["x-api-key"])
+	if !apikeys.Have(apiKeyHeader) {
+		return events.APIGatewayProxyResponse{
+			StatusCode: 403,
+			Body:       "Forbidden",
+		}, nil
+	}
 
 	var (
 		reqContentType = request.Headers["content-type"] // API Gateway normalizes the header to lowercase
