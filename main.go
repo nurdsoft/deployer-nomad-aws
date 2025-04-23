@@ -31,6 +31,10 @@ func Entrypoint(request events.APIGatewayProxyRequest) (events.APIGatewayProxyRe
 		err    error
 	)
 
+	resp.Body = request.Body
+	resp.StatusCode = 200
+	return resp, nil
+
 	// switch reqContentType {
 	// case "application/hcl":
 	job, err = client.ParseHCL(request.Body, true)
