@@ -2,6 +2,7 @@ package main
 
 import (
 	"encoding/json"
+	"strings"
 
 	"github.com/aws/aws-lambda-go/events"
 	"github.com/aws/aws-lambda-go/lambda"
@@ -29,18 +30,16 @@ func Entrypoint(request events.APIGatewayProxyRequest) (events.APIGatewayProxyRe
 		err            error
 	)
 
-	switch reqContentType {
-	case "text/plain":
-		job, err = client.ParseHCL(request.Body, true)
-		if err != nil {
-			resp.StatusCode = 400
-			resp.Body = "failed to parse hcl body: " + err.Error()
-			return resp, nil
-		}
-
-	default:
+	if !strings.HasPrefix(reqContentType, "text/plain") {
 		resp.StatusCode = 400
 		resp.Body = "unsupported content type: '" + reqContentType + "'"
+		return resp, nil
+	}
+
+	job, err = client.ParseHCL(request.Body, true)
+	if err != nil {
+		resp.StatusCode = 400
+		resp.Body = "failed to parse hcl: body='" + request.Body + "' error='" + err.Error() + "'"
 		return resp, nil
 	}
 
