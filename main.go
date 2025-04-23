@@ -24,31 +24,27 @@ func Entrypoint(request events.APIGatewayProxyRequest) (events.APIGatewayProxyRe
 	// }
 
 	var (
-		// reqContentType = request.Headers["Content-Type"]
-		client = nomad.GetInstance().Jobs() // Get the Nomad client instance
-		job    *api.Job
-		resp   events.APIGatewayProxyResponse
-		err    error
+		reqContentType = request.Headers["Content-Type"]
+		client         = nomad.GetInstance().Jobs() // Get the Nomad client instance
+		job            *api.Job
+		resp           events.APIGatewayProxyResponse
+		err            error
 	)
 
-	resp.Body = request.Body
-	resp.StatusCode = 200
-	return resp, nil
+	switch reqContentType {
+	case "text/plain":
+		job, err = client.ParseHCL(request.Body, true)
+		if err != nil {
+			resp.StatusCode = 400
+			resp.Body = "failed to parse hcl body: " + err.Error()
+			return resp, nil
+		}
 
-	// switch reqContentType {
-	// case "application/hcl":
-	job, err = client.ParseHCL(request.Body, true)
-	if err != nil {
+	default:
 		resp.StatusCode = 400
-		resp.Body = "failed to parse hcl body: " + err.Error()
+		resp.Body = "unsupported content type"
 		return resp, nil
 	}
-
-	// default:
-	// 	resp.StatusCode = 400
-	// 	resp.Body = "unsupported content type"
-	// 	return resp, nil
-	// }
 
 	if validateResp, _, err := client.Validate(job, nil); err != nil {
 		b, _ := json.Marshal(validateResp)
