@@ -22,8 +22,8 @@ func Entrypoint(request events.APIGatewayProxyRequest) (events.APIGatewayProxyRe
 	// }
 
 	var (
-		reqContentType = request.Headers["Content-Type"]
-		client         = nomad.GetInstance().Jobs() // Get the Nomad client instance
+		reqContentType = request.Headers["content-type"] // API Gateway normalizes the header to lowercase
+		client         = nomad.GetInstance().Jobs()      // Get the Nomad client instance
 		job            *api.Job
 		resp           events.APIGatewayProxyResponse
 		err            error
