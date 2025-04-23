@@ -12,9 +12,7 @@ import (
 
 func Entrypoint(request events.APIGatewayProxyRequest) (events.APIGatewayProxyResponse, error) {
 	// authHeader := strings.TrimSpace(request.Headers["Authorization"])
-	// if strings.HasPrefix(authHeader, "Bearer ") {
-	// 	authHeader = strings.TrimSpace(strings.TrimPrefix(authHeader, "Bearer "))
-	// }
+	// authHeader = strings.TrimSpace(strings.TrimPrefix(authHeader, "Bearer "))
 
 	// if !apikeys.Have(authHeader) {
 	// 	return events.APIGatewayProxyResponse{
@@ -42,7 +40,7 @@ func Entrypoint(request events.APIGatewayProxyRequest) (events.APIGatewayProxyRe
 
 	default:
 		resp.StatusCode = 400
-		resp.Body = "unsupported content type"
+		resp.Body = "unsupported content type: '" + reqContentType + "'"
 		return resp, nil
 	}
 
