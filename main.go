@@ -25,7 +25,7 @@ func Entrypoint(request events.APIGatewayProxyRequest) (events.APIGatewayProxyRe
 
 	var (
 		// reqContentType = request.Headers["Content-Type"]
-		client = nomad.GetInstance().Jobs()
+		client = nomad.GetInstance().Jobs() // Get the Nomad client instance
 		job    *api.Job
 		resp   events.APIGatewayProxyResponse
 		err    error
@@ -33,7 +33,7 @@ func Entrypoint(request events.APIGatewayProxyRequest) (events.APIGatewayProxyRe
 
 	// switch reqContentType {
 	// case "application/hcl":
-	job, err = client.ParseHCL(string(resp.Body), true)
+	job, err = client.ParseHCL(request.Body, true)
 	if err != nil {
 		resp.StatusCode = 400
 		resp.Body = "failed to parse hcl body: " + err.Error()
