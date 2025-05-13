@@ -35,7 +35,17 @@ func Entrypoint(request events.APIGatewayProxyRequest) (events.APIGatewayProxyRe
 		return resp, nil
 	}
 
-	job, err = client.ParseHCL(request.Body, true)
+	// Get variables from query string parameters
+	var varsfile string
+	for k, v := range request.QueryStringParameters {
+		varsfile += k + "=" + v + "\n"
+	}
+	parseReq := &api.JobsParseRequest{
+		JobHCL:       request.Body,
+		Variables:    varsfile,
+		Canonicalize: true,
+	}
+	job, err = client.ParseHCLOpts(parseReq)
 	if err != nil {
 		resp.StatusCode = 400
 		resp.Body = "failed to parse hcl: body='" + request.Body + "' error='" + err.Error() + "'"
